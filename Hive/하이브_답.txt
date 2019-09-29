@@ -1,0 +1,352 @@
+[airdelay] desc table
+year	int	
+month	int	
+dayofmonth	int	
+dayofweek	int	
+deptime	int	
+crsdeptime	int	
+arrtime	int	
+crsarrtime	int	
+uniquecarrier	string	
+flightnum	int	
+tailnum	string	
+actualelapsedtime	int	
+crselapsedtime	int	
+airtime	int	
+arrdelay	int	
+depdelay	int	
+origin	string	
+dest	string	
+distance	int	
+taxiin	int	
+taxiout	int	
+cancelled	int	
+cancellationcode	string	A = carrier, B = weather, C = NAS, D=security
+diverted	int	1 = yes, 0 = no
+carrierdelay	string	
+weatherdelay	string	
+nasdelay	string	
+securitydelay	string	
+lateaircraftdelay	string	
+delayyear	int	
+
+총 22450074
+
+#하이브적용예제문제_20190125(Friday)
+1번 : 최대 지연을 일으킨 비행기를 찾아내시오.
+[관련 컬럼:arrdelay/ flightnum]
+
+hive> select flightnum, max(arrdelay) as maxd
+    > from airdelay
+    > group by flightnum
+    > order by maxd desc
+    > limit 10;
+
+A:
+837	2137
+377	1946
+164	1724
+922	1710
+920	1688
+945	1634
+1717	1611
+208	1597
+587	1575
+511	1528
+
+
+2번 : 가장 많이 취소된 비행일정은 몇 월에 주로 나타나는가?
+[관련컬럼 : cancelled/ month]-> desc
+
+hive> select month, sum(cancelled) as sum_can
+    > from airdelay
+    > group by month
+    > order by sum_can desc;
+A:
+9	128618
+1	78250
+6	54483
+2	51482
+12	48450
+7	47945
+3	46565
+8	45359
+5	42264
+4	36492
+10	31519
+11	26715
+
+
+3번 : 비행일정이 주로 최소되는 원인은 무엇인가?
+[관련컬럼 : cancellationcode/ cancelled]
+
+hive> select cancellationcode, sum(cancelled) as sum_can
+    > from airdelay
+    > group by cancellationcode
+    > order by sum_can desc;
+
+A:
+
+
+4번 : 월별 비행거리가 차이가 있는지 살펴보시오?
+[관련컬럼 : month/ distance]
+
+hive> select month, avg(distance) as avg_dis
+    > from airdelay
+    > group by month
+    > order by avg_dis desc;
+
+A:
+7	762.623479531478
+8	762.0856298845124
+12	758.7860198365465
+6	757.4317025677191
+9	753.9560752954651
+11	753.0336456342745
+10	751.0183440724186
+5	749.4090899862516
+4	746.7085801123238
+3	745.3884451303944
+2	741.3380609778181
+1	739.6577407730061
+
+
+5번 : 년도별 취소 비행건수를 비교하시오.
+[관련컬럼 : cancelled/ year]
+
+hive> select year, sum(cancelled) as sum_can
+    > from airdelay                         
+    > group by year                         
+    > order by sum_can desc;
+
+A:
+2001	231198
+2000	187490
+1999	154311
+2002	65143
+
+
+6번 : 비행시간(airtime)을 년, 월별로 하여 평균시간으로 나타내시오.
+[관련컬럼 : year/month/airtime]
+
+hive> select year, month, avg(airtime) as avg_air
+    > from airdelay
+    > group by year, month                       
+    > order by avg_air desc;  
+
+A:
+2002	12	108.53495340580524
+2000	12	107.8096363741191
+2002	11	106.97676909035594
+2000	11	106.84344218209758
+2000	4	106.76589969951576
+2000	6	106.54805197109563
+2000	7	106.53943540901656
+2000	10	106.36682628067055
+2000	1	106.27411342174565
+2000	8	106.19490742202714
+2000	3	106.16374991785051
+2002	3	106.15145201877083
+2000	5	106.09297382183054
+2000	2	105.99699926207535
+2000	9	105.92934983519537
+2002	6	105.91557166934682
+2002	10	105.85410872657107
+1999	1	105.79335548641536
+2002	7	105.66407029198848
+2002	8	105.64865610133684
+2002	4	105.46360666645104
+1999	12	105.40918065795583
+2002	5	105.37298359005246
+1999	4	105.01841567125054
+1999	3	104.93756059210773
+2002	9	104.85354489004123
+1999	8	104.85168028967188
+1999	7	104.77202573120378
+1999	6	104.76938593463537
+1999	5	104.68622769959848
+2001	2	104.5377309362519
+2002	1	104.48433624167808
+2001	12	104.36197170834794
+2002	2	104.32269838576086
+1999	2	104.31078931408517
+1999	11	104.08840679666437
+1999	10	103.98369855577923
+1999	9	103.84922446590576
+2001	3	103.76404821158444
+2001	8	103.60227893000213
+2001	6	103.51299691302196
+2001	1	103.2908123376955
+2001	7	103.22959116740594
+2001	4	103.22701395074496
+2001	5	102.829783794706
+2001	11	102.75239183380394
+2001	9	101.84243874170487
+2001	10	101.47721515214735
+
+
+7번 : 비행시간(airtime)을 비행기별(flightnum)로 큰순서부터 나열하시오. [10개만 추출]
+[관련컬럼 : flightnum/airtime]
+
+hive> select flightnum, sum(airtime) as sum_air
+    > from airdelay
+    > group by flightnum
+    > order by sum_air desc
+    > limit 10;
+
+A:
+1	2965968
+197	2612043
+73	2348715
+199	2347589
+2	2320869
+65	2311578
+231	2267516
+343	2259869
+39	2258054
+14	2235920
+
+
+8번 : 요일(dayofweek)별로 지연(arrdelay)시간과 비행시간(airtime)의 차이를 보시오.
+[관련컬럼 : dayofweek/arrdelay/arrtime]
+
+hive> select dayofweek, avg(arrdelay) as avg_arr, avg(airtime) as avg_air
+    > from airdelay
+    > group by dayofweek
+    > order by dayofweek;
+
+A:
+1	6.239553979258358	104.33228914010876
+2	5.059887861415478	104.42089272392495
+3	6.256303228365174	104.41410303134245
+4	8.989597126398106	104.55761533160889
+5	10.431181440528363	104.44670100279478
+6	3.9598591586846514	107.56381779537652
+7	6.922034644138962	105.68169517840614
+
+
+9번 : 매월중 어느날(DayofMonth)별로 지연(arrdelay)차이가 있는지 살피시오.
+[관련컬럼 : dayofmonth/ arrdelay]
+
+hive> select dayofmonth, avg(arrdelay) as avg_arr
+    > from airdelay                              
+    > group by dayofmonth                        
+    > order by dayofmonth desc;
+
+
+A:
+31	6.606454853330928
+30	5.7429824963693346
+29	5.562215611040608
+28	6.814059479512364
+27	6.4752578669259035
+26	7.181985527396563
+25	6.148831537040233
+24	5.9679360975211315
+23	7.148757402439641
+22	8.284285756055587
+21	7.736401199508036
+20	7.194946986990937
+19	8.239321413565094
+18	7.2575779234387205
+17	7.554253500596009
+16	7.381433089435557
+15	7.411397367605984
+14	8.484537738174902
+13	7.930974785094561
+12	8.351887019741783
+11	7.790095912191619
+10	7.626597618102974
+9	6.791383087402261
+8	5.709573090956314
+7	5.238585244466503
+6	6.234195228164611
+5	5.617730667847519
+4	5.725041210177512
+3	6.514274840349022
+2	6.583612724773521
+1	5.880076849021941
+
+
+10번 : 출발지(Origin)와 도착지(Dest)별로 가장 빈번한 지연
+(arrdelay)내용들을 비교하시오.[10개만 추출]
+[관련컬럼 : origin/dest/arrdelay]
+
+hive> select origin, dest, avg(arrdelay) as avg_arr
+    > from airdelay
+    > group by origin, dest
+    > order by avg_arr desc
+    > limit 10;
+
+A:
+LAS	PSC	249.0
+SAT	JFK	195.0
+MEM	DSM	169.0
+BNA	IAD	165.0
+OKC	AUS	143.0
+ORF	FLL	114.0
+SJC	SFO	114.0
+IAD	PBI	104.0
+IAD	BWI	99.0
+ACY	JFK	98.0
+
+
+11번 : 출발지와 도착지별로 평균적으로 가장 비행시간이 큰 순
+서대로 나열하시오.[10개만 추출]
+[관련컬럼 : origin/dest/airtime]
+
+hive> select origin, dest, avg(airtime) as avg_air    
+    > from airdelay
+    > group by origin, dest
+    > order by avg_air desc
+    > limit 10;
+
+EWR	HNL	589.9155617585485
+DTW	HNL	541.1161825726141
+ATL	HNL	524.6704545454545
+HNL	EWR	524.1363952679193
+STL	HNL	509.49556868537667
+STL	OGG	504.9809619238477
+ORD	HNL	502.572930955647
+MSP	HNL	474.93901258470476
+HNL	DTW	472.577868852459
+HNL	ATL	472.1832917705736
+
+
+12번 : 연도별 요일별로 비행시간 차이가 있는지 살피시오.
+[관련컬럼 : year/dayofweek/airtime]
+
+hive> select year, dayofweek, avg(airtime) as avg_air
+    > from airdelay
+    > group by year, dayofweek
+    > order by year, dayofweek;   
+
+A:
+1999	1	104.01658737597033
+1999	2	104.09213613456278
+1999	3	104.13495972744438
+1999	4	104.14784465944916
+1999	5	104.0237312814083
+1999	6	107.55665913029709
+1999	7	105.37514063382105
+2000	1	105.89774717186536
+2000	2	105.8168839386464
+2000	3	105.81030912623885
+2000	4	105.96511205208623
+2000	5	105.83369325859566
+2000	6	108.90351963754652
+2000	7	107.25751842698104
+2001	1	102.4804338751874
+2001	2	102.60305110934593
+2001	3	102.71648024944255
+2001	4	103.02035335348596
+2001	5	102.92705255880601
+2001	6	105.48954426966533
+2001	7	103.64424367572319
+2002	1	105.08871706015708
+2002	2	105.27130670337607
+2002	3	105.0848559762082
+2002	4	105.18535009071766
+2002	5	105.09877048965079
+2002	6	108.45367703259647
+2002	7	106.56975872776215
