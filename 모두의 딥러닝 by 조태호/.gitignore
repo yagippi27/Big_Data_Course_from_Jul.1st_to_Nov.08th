@@ -1,0 +1,32 @@
+## .py, .ipynb, .R만 올릴 수 있도록 수정합니다. ##
+
+### csv, txt
+*.csv
+*.txt
+
+
+### jpg, jpeg, png
+*.jpg
+*.jpeg
+*.png
+
+
+### xls, pptx, pdf, html
+*.pdf
+*.xls
+*.pptx
+*.html
+
+
+### hdf5, h5
+*.hdf5
+*.h5
+
+
+### Rhistory
+*.Rhistory
+
+
+### jar
+*.jar
+
